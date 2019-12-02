@@ -81,66 +81,68 @@ public class EGWXManager {
     private final static String TRANSACTION_VIDEO = "video";
     private final static String TRANSACTION_FILE = "file";
 
-    public boolean shareText(String shareText, String title, String description,
-                             ShareType type, ShareResultListener listener) {
+    public boolean shareText(String shareText, EGWXShareType type, ShareResultListener listener) {
         i("shareText");
         this.listener = listener;
         WXTextObject obj = new WXTextObject(shareText);
-        WXMediaMessage msg = buildMediaMesage(obj, title, description);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_TEXT), getWxShareType(type));
+        WXMediaMessage msg = buildMediaMesage(obj, "", "");
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_TEXT), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
-    public boolean shareImage(Bitmap bitmap, String title, String description,
-                              ShareType type, ShareResultListener listener) {
+    public boolean shareImage(Bitmap bitmap, EGWXShareType type, ShareResultListener listener) {
         i("shareImage");
         this.listener = listener;
         WXMediaMessage.IMediaObject obj = new WXImageObject(bitmap);
-        WXMediaMessage msg = buildMediaMesage(obj, title, description);
+        WXMediaMessage msg = buildMediaMesage(obj, "", "");
         msg.setThumbImage(bitmap);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_IMAGE), getWxShareType(type));
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_IMAGE), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
-    public boolean shareMusic(String url, String title, String description,
-                              ShareType type, ShareResultListener listener) {
+    public boolean shareMusic(String url, String title, String description, Bitmap icon,
+                              EGWXShareType type, ShareResultListener listener) {
         i("shareMusic");
         this.listener = listener;
         WXMusicObject obj = new WXMusicObject();
         obj.musicUrl = url;
         WXMediaMessage msg = buildMediaMesage(obj, title, description);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_MUSIC), getWxShareType(type));
+        msg.setThumbImage(icon);
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_MUSIC), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
-    public boolean shareVideo(String url, String title, String description,
-                              ShareType type, ShareResultListener listener) {
+    public boolean shareVideo(String url, String title, String description, Bitmap icon,
+                              EGWXShareType type, ShareResultListener listener) {
         i("shareVideo");
         this.listener = listener;
         WXVideoObject obj = new WXVideoObject();
         obj.videoUrl = url;
         WXMediaMessage msg = buildMediaMesage(obj, title, description);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_VIDEO), getWxShareType(type));
+        msg.setThumbImage(icon);
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_VIDEO), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
-    public boolean shareWebPage(String weburl, String title, String description,
-                                ShareType type, ShareResultListener listener) {
+    public boolean shareWebPage(String weburl, String title, String description, Bitmap icon,
+                                EGWXShareType type, ShareResultListener listener) {
         i("shareWebPage");
         this.listener = listener;
         WXWebpageObject obj = new WXWebpageObject(weburl);
         WXMediaMessage msg = buildMediaMesage(obj, title, description);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_WEBPAGE), getWxShareType(type));
+        msg.setThumbImage(icon);
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_WEBPAGE), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
-    public boolean shareFile(String filepath, String title, String description,
-                             ShareType type, ShareResultListener listener) {
+    public boolean shareFile(String filepath, String title, String description, Bitmap icon,
+                             EGWXShareType type, ShareResultListener listener) {
         i("shareFile");
         this.listener = listener;
         WXFileObject obj = new WXFileObject(filepath);
         WXMediaMessage msg = buildMediaMesage(obj, title, description);
-        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_FILE), getWxShareType(type));
+        msg.setThumbImage(icon);
+        BaseReq req = buildSendReq(msg, buildTransaction(TRANSACTION_FILE), getWxEGWXShareType(type));
         return api.sendReq(req);
     }
 
@@ -158,16 +160,16 @@ public class EGWXManager {
         return false;
     }
 
-    private int getWxShareType(ShareType type) {
-        if (type == ShareType.FRIENDS) {
+    private int getWxEGWXShareType(EGWXShareType type) {
+        if (type == EGWXShareType.FRIENDS) {
             return SendMessageToWX.Req.WXSceneSession;
-        } else if (type == ShareType.FRIENDSCIRCLE) {
+        } else if (type == EGWXShareType.FRIENDSCIRCLE) {
             return SendMessageToWX.Req.WXSceneTimeline;
-        } else if (type == ShareType.FAVOURITE) {
+        } else if (type == EGWXShareType.FAVOURITE) {
             return SendMessageToWX.Req.WXSceneFavorite;
         }
 
-        throw new IllegalArgumentException("非法参数: 不识别的ShareType -> " + type.name());
+        throw new IllegalArgumentException("非法参数: 不识别的EGWXShareType -> " + type.name());
     }
 
     private BaseReq buildSendReq(WXMediaMessage msg, String transaction, int scene) {
@@ -199,10 +201,6 @@ public class EGWXManager {
      */
     public interface ShareResultListener {
         void onShareResult(boolean result);
-    }
-
-    public enum ShareType {
-        FRIENDS, FRIENDSCIRCLE, FAVOURITE
     }
 
     private void i(String log) {
