@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 
 public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
@@ -34,28 +36,37 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
         i("baseResp=" + resp + ",thread=" + Thread.currentThread().getName());
         if (isFinishing()) return;
 
-        if (EGWXManager.getInstance().performShareResult(resp.errCode == BaseResp.ErrCode.ERR_OK)) {
-            finish();
-            return;
-        }
+        if (ConstantsAPI.COMMAND_SENDMESSAGE_TO_WX == resp.getType()) {
+            // 分享
+            if (EGWXManager.getInstance().performShareResult(resp.errCode == BaseResp.ErrCode.ERR_OK)) {
+                finish();
+                return;
+            }
 
-        switch (resp.errCode) {
-            case BaseResp.ErrCode.ERR_OK:
-                t("已发送");
-                break;
-            case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                t("发送被拒绝");
-                break;
-            case BaseResp.ErrCode.ERR_SENT_FAILED:
-                t("发送失败");
-                break;
-            case BaseResp.ErrCode.ERR_USER_CANCEL:
-                t("取消发送");
-                break;
-            default:
-                t("发送返回");
+            switch (resp.errCode) {
+                case BaseResp.ErrCode.ERR_OK:
+                    t("已发送");
+                    break;
+                case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                    t("发送被拒绝");
+                    break;
+                case BaseResp.ErrCode.ERR_SENT_FAILED:
+                    t("发送失败");
+                    break;
+                case BaseResp.ErrCode.ERR_USER_CANCEL:
+                    t("取消发送");
+                    break;
+                default:
+                    t("发送返回");
+            }
+            finish();
+        } else {
+            // 登录
+            String code = ((SendAuth.Resp) resp).code;
+            if (EGWXManager.wxLoginResultListener != null) {
+                EGWXManager.wxLoginResultListener.onResult(code);
+            }
         }
-        finish();
     }
 
     private void t(String msg) {

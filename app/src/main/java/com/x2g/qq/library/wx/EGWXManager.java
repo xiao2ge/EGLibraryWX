@@ -8,9 +8,11 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
+import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXFileObject;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
@@ -201,6 +203,27 @@ public class EGWXManager {
      */
     public interface ShareResultListener {
         void onShareResult(boolean result);
+    }
+
+    static OnWXLoginResultListener wxLoginResultListener;
+
+    /**
+     * 微信登录
+     */
+    public void wxLogin(OnWXLoginResultListener wxLoginResultListener) {
+        if (!api.isWXAppInstalled()) {
+            Toast.makeText(application, "你的设备没有安装微信，请先下载微信", Toast.LENGTH_SHORT).show();
+        } else {
+            EGWXManager.wxLoginResultListener = wxLoginResultListener;
+            SendAuth.Req req = new SendAuth.Req();
+            // 应用授权作用域，如获取用户个人信息则填写 snsapi_userinfo
+            // snsapi_userinfo,snsapi_friend,snsapi_message,snsapi_contact
+            req.scope = "snsapi_userinfo";
+            // 用于保持请求和回调的状态，授权请求后原样带回给第三方。该参数可用于防止 csrf 攻击（跨站请求伪造攻击），
+            // 建议第三方带上该参数，可设置为简单的随机数加 session 进行校验
+            req.state = "none";
+            api.sendReq(req);
+        }
     }
 
     private void i(String log) {
